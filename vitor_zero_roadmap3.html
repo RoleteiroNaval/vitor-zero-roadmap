@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>VITOR ZERO — Plano Real · 90 Dias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0a0f;
+  --paper:#f2f0eb;
+  --paper2:#e8e5de;
+  --accent:#e63b2e;
+  --accent2:#1a1aff;
+  --gold:#c9a84c;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Inter',system-ui,sans-serif;
+  --display:'Syne',system-ui,sans-serif;
+  --muted:#6b6860;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink);
+  color:var(--paper);
+  font-family:var(--sans);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── NOISE LAYER ── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.5;mix-blend-mode:overlay;
+}
+
+/* ── LOADING SCREEN ── */
+#loader{
+  position:fixed;inset:0;z-index:999;background:var(--ink);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
+  transition:opacity .6s ease, visibility .6s;
+}
+#loader.gone{opacity:0;visibility:hidden}
+.loader-line{width:200px;height:1px;background:rgba(255,255,255,.1);position:relative;overflow:hidden}
+.loader-line::after{
+  content:'';position:absolute;inset:0;
+  background:var(--accent);
+  animation:load 1.4s ease forwards;
+}
+@keyframes load{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
+.loader-text{font-family:var(--mono);font-size:11px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+
+/* ── CURSOR ── */
+.cur{
+  position:fixed;width:8px;height:8px;background:var(--accent);border-radius:50%;
+  pointer-events:none;z-index:9999;transition:transform .15s ease;mix-blend-mode:exclusion;
+  transform:translate(-50%,-50%);
+}
+.cur-ring{
+  position:fixed;width:40px;height:40px;border:1px solid rgba(230,59,46,.4);border-radius:50%;
+  pointer-events:none;z-index:9998;transition:transform .4s ease, width .3s, height .3s;
+  transform:translate(-50%,-50%);
+}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:8vw 6vw 6vw;position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 800px 600px at 70% 30%, rgba(26,26,255,.12), transparent),
+    radial-gradient(ellipse 600px 800px at 10% 80%, rgba(230,59,46,.1), transparent),
+    var(--ink);
+}
+.hero-line-v{
+  position:absolute;top:0;bottom:0;left:6vw;width:1px;background:rgba(255,255,255,.06);z-index:0;
+}
+.hero-eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.35em;color:var(--accent);
+  text-transform:uppercase;margin-bottom:32px;position:relative;z-index:1;
+  display:flex;align-items:center;gap:16px;
+}
+.hero-eyebrow::before{content:'';width:40px;height:1px;background:var(--accent)}
+.hero h1{
+  font-family:var(--display);font-size:clamp(52px,10vw,130px);line-height:.92;
+  font-weight:800;letter-spacing:-.03em;position:relative;z-index:1;
+  max-width:900px;
+}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero-sub{
+  font-size:clamp(15px,1.6vw,18px);color:rgba(242,240,235,.55);line-height:1.6;
+  max-width:520px;margin-top:28px;position:relative;z-index:1;font-weight:300;
+}
+.hero-scroll{
+  position:absolute;bottom:40px;right:6vw;z-index:1;
+  font-family:var(--mono);font-size:10px;letter-spacing:.25em;color:var(--muted);
+  text-transform:uppercase;writing-mode:vertical-rl;display:flex;align-items:center;gap:12px;
+}
+.hero-scroll::after{content:'';width:1px;height:60px;background:rgba(255,255,255,.15)}
+.hero-counter{
+  position:absolute;top:8vw;right:6vw;z-index:1;text-align:right;
+}
+.hero-counter b{
+  font-family:var(--display);font-size:clamp(80px,14vw,180px);font-weight:800;
+  line-height:1;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.08);
+  display:block;
+}
+.hero-counter span{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--muted)}
+
+/* ── SECTION SHARED ── */
+section{padding:100px 6vw;position:relative}
+.s-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:.35em;color:var(--muted);
+  text-transform:uppercase;display:flex;align-items:center;gap:14px;margin-bottom:60px;
+}
+.s-label::before{content:'';width:30px;height:1px;background:currentColor}
+.s-num{color:var(--accent);margin-right:6px}
+
+/* ── TRUTH SECTION ── */
+.truth{background:var(--paper);color:var(--ink)}
+.truth .s-label{color:rgba(10,10,15,.35)}
+.truth .s-label::before{background:rgba(10,10,15,.2)}
+.truth-heading{
+  font-family:var(--display);font-size:clamp(32px,5vw,64px);font-weight:800;
+  letter-spacing:-.02em;line-height:1;margin-bottom:56px;max-width:700px;
+}
+.truth-heading span{color:var(--accent)}
+.truth-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.truth-block{
+  padding:40px;background:var(--paper2);
+}
+.truth-block:nth-child(odd){background:var(--paper)}
+.truth-num{
+  font-family:var(--display);font-size:72px;font-weight:800;line-height:1;
+  color:transparent;-webkit-text-stroke:1.5px rgba(10,10,15,.15);margin-bottom:16px;
+}
+.truth-title{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:10px}
+.truth-desc{font-size:14px;line-height:1.7;color:rgba(10,10,15,.65);max-width:340px}
+.truth-tag{
+  display:inline-block;margin-top:16px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;padding:5px 12px;
+  border:1px solid rgba(10,10,15,.15);border-radius:3px;color:rgba(10,10,15,.5);
+}
+.truth-tag.hot{border-color:var(--accent);color:var(--accent);background:rgba(230,59,46,.06)}
+
+/* ── GLOSSARY ── */
+.glossary-heading{
+  font-family:var(--display);font-size:clamp(28px,4vw,52px);font-weight:800;
+  letter-spacing:-.02em;margin-bottom:60px;
+}
+.glossary-heading em{font-style:normal;color:var(--accent)}
+.term{
+  border-top:1px solid rgba(255,255,255,.07);padding:32px 0;
+  display:grid;grid-template-columns:220px 1fr 1fr;gap:40px;align-items:start;
+}
+.term:last-child{border-bottom:1px solid rgba(255,255,255,.07)}
+.term-name{
+  font-family:var(--display);font-size:22px;font-weight:700;line-height:1.1;
+}
+.term-what{font-size:14px;color:rgba(242,240,235,.5);line-height:1.7}
+.term-use{font-size:14px;color:rgba(242,240,235,.7);line-height:1.7}
+.term-tag{
+  display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;padding:3px 8px;border-radius:2px;margin-top:8px;
+}
+.t-free{background:rgba(57,255,136,.1);color:#39ff88}
+.t-paid{background:rgba(201,168,76,.1);color:var(--gold)}
+.t-use{background:rgba(26,26,255,.15);color:#8888ff}
+.t-later{background:rgba(255,255,255,.06);color:var(--muted)}
+
+/* ── PLAN ── */
+.plan{background:var(--ink)}
+.plan-heading{
+  font-family:var(--display);font-size:clamp(28px,4vw,52px);font-weight:800;
+  letter-spacing:-.02em;margin-bottom:80px;
+}
+.phase{margin-bottom:80px;position:relative;padding-left:0}
+.phase-header{
+  display:flex;align-items:baseline;gap:24px;margin-bottom:32px;
+  padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.07);
+}
+.phase-period{
+  font-family:var(--mono);font-size:10px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--muted);
+}
+.phase-title{
+  font-family:var(--display);font-size:clamp(22px,3vw,38px);font-weight:800;
+  letter-spacing:-.02em;
+}
+.phase-tag{
+  margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.15em;
+  text-transform:uppercase;padding:5px 14px;border-radius:3px;
+}
+.ph-red{background:rgba(230,59,46,.15);color:var(--accent);border:1px solid rgba(230,59,46,.25)}
+.ph-blue{background:rgba(26,26,255,.12);color:#8888ff;border:1px solid rgba(26,26,255,.2)}
+.ph-gold{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.2)}
+
+.tasks{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.task{
+  padding:24px;border:1px solid rgba(255,255,255,.06);border-radius:4px;
+  position:relative;overflow:hidden;background:rgba(255,255,255,.02);
+  transition:border-color .2s, background .2s;
+}
+.task:hover{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.04)}
+.task::before{
+  content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+  background:var(--accent);opacity:0;transition:opacity .2s;
+}
+.task:hover::before{opacity:1}
+.task-n{
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+  color:var(--accent);margin-bottom:10px;
+}
+.task-title{
+  font-family:var(--display);font-size:17px;font-weight:700;
+  margin-bottom:8px;line-height:1.2;
+}
+.task-desc{font-size:13px;color:rgba(242,240,235,.5);line-height:1.65}
+.task-action{
+  margin-top:14px;font-family:var(--mono);font-size:11px;
+  color:var(--accent2);letter-spacing:.1em;display:flex;align-items:center;gap:6px;
+}
+.task-action::before{content:'→'}
+
+/* ── STACK ── */
+.stack-section{background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.05)}
+.stack-heading{
+  font-family:var(--display);font-size:clamp(28px,4vw,52px);font-weight:800;
+  letter-spacing:-.02em;margin-bottom:20px;
+}
+.stack-sub{color:rgba(242,240,235,.4);font-size:15px;margin-bottom:64px;max-width:500px;line-height:1.6}
+.stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.05)}
+.stack-cell{
+  padding:28px 24px;background:var(--ink);
+  transition:background .2s;
+}
+.stack-cell:hover{background:rgba(255,255,255,.03)}
+.stack-cat{
+  font-family:var(--mono);font-size:9px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+}
+.stack-tool{
+  font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:6px;
+}
+.stack-why{font-size:12px;color:rgba(242,240,235,.4);line-height:1.5}
+.stack-badge{
+  display:inline-block;margin-top:10px;font-family:var(--mono);font-size:9px;
+  letter-spacing:.15em;text-transform:uppercase;padding:3px 8px;border-radius:2px;
+}
+.core-badge{background:rgba(230,59,46,.12);color:var(--accent)}
+.later-badge{background:rgba(255,255,255,.05);color:var(--muted)}
+
+/* ── FOCUS ── */
+.focus{
+  min-height:80vh;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:100px 6vw;position:relative;overflow:hidden;
+}
+.focus-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 700px 500px at 50% 50%, rgba(230,59,46,.08), transparent);
+}
+.focus-inner{position:relative;z-index:1}
+.focus-quote{
+  font-family:var(--display);font-size:clamp(24px,4.5vw,64px);font-weight:800;
+  letter-spacing:-.02em;line-height:1;max-width:800px;
+}
+.focus-quote em{font-style:normal;color:var(--accent)}
+.focus-attr{
+  font-family:var(--mono);font-size:11px;letter-spacing:.25em;
+  color:var(--muted);margin-top:32px;text-transform:uppercase;
+}
+
+/* ── WHAT IS ── */
+.whatis{background:var(--paper);color:var(--ink)}
+.whatis .s-label{color:rgba(10,10,15,.35)}
+.whatis .s-label::before{background:rgba(10,10,15,.2)}
+.whatis-heading{
+  font-family:var(--display);font-size:clamp(28px,4vw,52px);font-weight:800;
+  letter-spacing:-.02em;margin-bottom:64px;
+}
+.qa-item{
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;
+  padding:36px 0;border-top:1px solid rgba(10,10,15,.1);
+}
+.qa-item:last-child{border-bottom:1px solid rgba(10,10,15,.1)}
+.qa-q{font-family:var(--display);font-size:22px;font-weight:700;line-height:1.2;color:var(--ink)}
+.qa-a{font-size:15px;line-height:1.75;color:rgba(10,10,15,.6)}
+.qa-a b{color:var(--ink);font-weight:600}
+.qa-a code{
+  display:inline-block;background:rgba(10,10,15,.07);border-radius:3px;
+  padding:1px 6px;font-family:var(--mono);font-size:13px;
+}
+
+/* ── CERT ── */
+.cert-section{padding:100px 6vw}
+.cert-heading{
+  font-family:var(--display);font-size:clamp(28px,4vw,52px);font-weight:800;
+  letter-spacing:-.02em;margin-bottom:16px;
+}
+.cert-sub{color:rgba(242,240,235,.4);font-size:15px;margin-bottom:64px;max-width:480px;line-height:1.6}
+.certs-list{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.cert-item{
+  padding:28px 32px;background:rgba(255,255,255,.02);
+  border:1px solid rgba(255,255,255,.05);display:flex;gap:20px;align-items:flex-start;
+  transition:background .2s, border-color .2s;
+}
+.cert-item:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
+.cert-rank{
+  font-family:var(--display);font-size:42px;font-weight:800;
+  color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.1);line-height:1;
+  flex-shrink:0;width:52px;
+}
+.cert-item.priority .cert-rank{-webkit-text-stroke-color:var(--accent);color:transparent}
+.cert-body{}
+.cert-issuer{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.cert-name{font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:6px;line-height:1.2}
+.cert-note{font-size:13px;color:rgba(242,240,235,.4);line-height:1.55}
+.cert-priority-tag{
+  display:inline-block;margin-top:10px;font-family:var(--mono);font-size:9px;
+  letter-spacing:.2em;text-transform:uppercase;padding:3px 8px;
+  background:rgba(230,59,46,.12);color:var(--accent);border-radius:2px;
+}
+
+/* ── NOW ── */
+.now{
+  background:var(--accent);color:#fff;
+  padding:100px 6vw;text-align:center;
+}
+.now-pre{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;opacity:.7;margin-bottom:24px}
+.now-heading{
+  font-family:var(--display);font-size:clamp(36px,6vw,80px);font-weight:800;
+  letter-spacing:-.02em;line-height:.95;margin-bottom:40px;
+}
+.now-steps{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2px;max-width:860px;margin:0 auto 48px;
+  background:rgba(255,255,255,.15);
+}
+.now-step{padding:28px 24px;background:var(--accent);text-align:left}
+.now-step-n{font-family:var(--mono);font-size:10px;letter-spacing:.25em;opacity:.6;margin-bottom:8px}
+.now-step-t{font-family:var(--display);font-size:17px;font-weight:700;line-height:1.2;margin-bottom:6px}
+.now-step-d{font-size:13px;opacity:.7;line-height:1.55}
+.now-cta{
+  display:inline-flex;align-items:center;gap:10px;font-family:var(--display);
+  font-size:15px;font-weight:700;color:var(--accent);background:#fff;
+  padding:14px 32px;border-radius:3px;text-decoration:none;letter-spacing:-.01em;
+  transition:opacity .2s;
+}
+.now-cta:hover{opacity:.85}
+
+/* ── FOOTER ── */
+footer{
+  padding:40px 6vw;border-top:1px solid rgba(255,255,255,.06);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+}
+.footer-brand{font-family:var(--display);font-size:18px;font-weight:800}
+.footer-brand span{color:var(--accent)}
+.footer-meta{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+
+/* ── ANIMATE ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:none}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+.reveal-delay-4{transition-delay:.4s}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .truth-grid,.tasks,.stack-grid,.certs-list,.qa-item,.now-steps{grid-template-columns:1fr}
+  .term{grid-template-columns:1fr;gap:12px}
+  .phase-header{flex-wrap:wrap}
+  .phase-tag{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-text">Inicializando sistema</div>
+  <div class="loader-line"></div>
+</div>
+
+<!-- Custom cursor -->
+<div class="cur" id="cur"></div>
+<div class="cur-ring" id="curring"></div>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-line-v"></div>
+  <div class="hero-counter" aria-hidden="true">
+    <b>90</b>
+    <span>dias para mudar</span>
+  </div>
+  <div class="hero-eyebrow reveal">
+    Vitor Zero — Plano Real
+  </div>
+  <h1 class="reveal reveal-delay-1">
+    Parar de<br>
+    acumular.<br>
+    <em>Começar</em><br>
+    a entregar.
+  </h1>
+  <p class="hero-sub reveal reveal-delay-2">
+    Você tem 60+ ferramentas mapeadas, 37 skills identificadas e um site impressionante feito do zero. O que falta não é conhecimento — é terminar uma coisa e mostrar para alguém real.
+  </p>
+  <div class="hero-scroll" aria-hidden="true">Scroll</div>
+</section>
+
+<!-- ══ VERDADE ══ -->
+<section class="truth">
+  <div class="s-label reveal"><span class="s-num">01</span> Diagnóstico honesto</div>
+  <h2 class="truth-heading reveal">O que você <span>já tem</span> — e o que falta de verdade</h2>
+  <div class="truth-grid">
+    <div class="truth-block reveal">
+      <div class="truth-num">60+</div>
+      <div class="truth-title">Ferramentas mapeadas</div>
+      <p class="truth-desc">Você pesquisou, organizou e catalogou um arsenal completo. Isso exige julgamento técnico real — a maioria dos devs não consegue nem listar 20 ferramentas com descrições precisas.</p>
+      <span class="truth-tag hot">Você tem isso</span>
+    </div>
+    <div class="truth-block reveal">
+      <div class="truth-num">37</div>
+      <div class="truth-title">Skills identificadas</div>
+      <p class="truth-desc">Frontend, backend, database, DevOps e IA — você sabe o que existe e onde se encaixa. Esse mapa mental é raro e vai acelerar qualquer aprendizado novo.</p>
+      <span class="truth-tag hot">Você tem isso</span>
+    </div>
+    <div class="truth-block reveal">
+      <div class="truth-num">01</div>
+      <div class="truth-title">Projeto no GitHub</div>
+      <p class="truth-desc">O Nexus Hub existe, está publicado, funciona bem e tem design profissional. Mas ainda não está no GitHub com README. Sem repositório público, ele não existe para recrutadores e clientes.</p>
+      <span class="truth-tag">Falta isso</span>
+    </div>
+    <div class="truth-block reveal">
+      <div class="truth-num">0</div>
+      <div class="truth-title">Primeiro cliente pago</div>
+      <p class="truth-desc">A única métrica que transforma "estudante" em "profissional" é alguém pagar pelo seu trabalho — mesmo R$50. Essa prova muda como você se apresenta para o mundo inteiro.</p>
+      <span class="truth-tag">O objetivo final</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOCO ══ -->
+<section class="focus">
+  <div class="focus-bg"></div>
+  <div class="focus-inner">
+    <p class="focus-quote reveal">
+      Você não tem problema de <em>conhecimento.</em><br>Você tem problema de <em>terminar.</em>
+    </p>
+    <p class="focus-attr reveal reveal-delay-1">Diagnóstico — Junho 2025</p>
+  </div>
+</section>
+
+<!-- ══ GLOSSÁRIO ══ -->
+<section style="padding:100px 6vw;background:var(--ink)">
+  <div class="s-label reveal"><span class="s-num">02</span> O que é cada coisa</div>
+  <h2 class="glossary-heading reveal">Entendendo o <em>arsenal</em><br>de uma vez por todas</h2>
+
+  <div class="term reveal">
+    <div class="term-name">IDEs<br>com IA</div>
+    <div class="term-what">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">O que são</b>
+      Ambientes onde você escreve ou gera código. Cursor = VS Code com IA integrada. Replit = editor online. Lovable, Rocket, Emergent = você descreve em texto e eles constroem o app.
+      <div><span class="term-tag t-use">Use agora</span> <span class="term-tag t-free">Cursor free</span></div>
+    </div>
+    <div class="term-use">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">Como usar</b>
+      Cursor é seu IDE principal. Configure com Claude e OpenRouter. Lovable e Rocket são ótimos para prototipar rápido — você descreve o que quer e em minutos tem algo funcionando para mostrar a um cliente.
+    </div>
+  </div>
+
+  <div class="term reveal">
+    <div class="term-name">LLM Routers<br>& APIs</div>
+    <div class="term-what">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">O que são</b>
+      Portais que dão acesso a múltiplos modelos de IA via API. OpenRouter = acessa Claude, GPT, Gemini, Kimi e mais 200 modelos com uma única key. Groq = mesmo conceito mas ultra-rápido e gratuito.
+      <div><span class="term-tag t-free">Free tier</span></div>
+    </div>
+    <div class="term-use">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">Como usar</b>
+      Crie conta no OpenRouter, pegue uma API key gratuita e conecte no Cursor. Agora seu IDE tem acesso a todos os melhores modelos sem pagar por vários planos. Use Groq para tarefas rápidas — é de graça e muito veloz.
+    </div>
+  </div>
+
+  <div class="term reveal">
+    <div class="term-name">Local LLMs<br>(Ollama etc)</div>
+    <div class="term-what">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">O que são</b>
+      Modelos de IA que rodam na sua máquina, sem internet, sem custo. Ollama e LM Studio são as interfaces. Você baixa um modelo como <code>llama3.1</code> ou <code>qwen2.5-coder</code> e usa pelo terminal ou interface gráfica.
+      <div><span class="term-tag t-later">Para depois</span></div>
+    </div>
+    <div class="term-use">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">Quando usar</b>
+      Ignore por enquanto. Local LLMs são para quando você já tem produto funcionando e quer reduzir custos de API ou rodar modelos privados. Antes disso, são distração. OpenRouter já te dá acesso ao que precisa.
+    </div>
+  </div>
+
+  <div class="term reveal">
+    <div class="term-name">Deploy<br>Platforms</div>
+    <div class="term-what">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">O que são</b>
+      Serviços que publicam seu site ou app na internet. Vercel = padrão para Next.js, deploy em 30 segundos com um comando. Netlify = similar. Cloudflare Pages = mais rápido globalmente.
+      <div><span class="term-tag t-free">100% gratuito</span> <span class="term-tag t-use">Use agora</span></div>
+    </div>
+    <div class="term-use">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">Como usar</b>
+      Suba seu projeto no GitHub → conecte no Vercel → deploy automático. Sempre que você fizer <code>git push</code>, o Vercel publica sozinho. Você nunca mais vai ter que "subir via FTP" nada.
+    </div>
+  </div>
+
+  <div class="term reveal">
+    <div class="term-name">GitHub<br>& Portfólio</div>
+    <div class="term-what">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">O que são</b>
+      GitHub é onde você guarda e versiona seu código. Portfólio não é um site bonito — é evidência de que você resolve problemas. São seus repositórios públicos com projetos reais.
+      <div><span class="term-tag t-use">Prioridade máxima</span></div>
+    </div>
+    <div class="term-use">
+      <b style="color:var(--paper);display:block;margin-bottom:6px">Como usar</b>
+      Crie sua conta, suba o Nexus Hub com README explicando o que é e quais tecnologias usou. Esse é seu projeto #1 de portfólio. Cada projeto no CS50x vira mais um repositório. Em 90 dias você tem 4-6 projetos reais.
+    </div>
+  </div>
+</section>
+
+<!-- ══ PLANO ══ -->
+<section class="plan" style="padding:100px 6vw">
+  <div class="s-label reveal"><span class="s-num">03</span> Plano de ação</div>
+  <h2 class="plan-heading reveal">90 dias. <em style="color:var(--accent)">Três fases.</em><br>Uma direção clara.</h2>
+
+  <!-- Fase 1 -->
+  <div class="phase reveal">
+    <div class="phase-header">
+      <div>
+        <div class="phase-period">Semana 1–2</div>
+        <div class="phase-title">Fase 1 — Existir</div>
+      </div>
+      <span class="phase-tag ph-red">Urgente</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-n">TAREFA 01</div>
+        <div class="task-title">Criar conta no GitHub e subir o Nexus Hub</div>
+        <p class="task-desc">github.com → New account → Novo repositório "nexus-hub" → upload dos arquivos → README explicando o projeto. Isso transforma seu site de "arquivo local" em portfólio visível para o mundo.</p>
+        <div class="task-action">github.com/new — faça isso hoje</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 02</div>
+        <div class="task-title">Criar e otimizar o LinkedIn</div>
+        <p class="task-desc">Headline exata: "Vibecoder | AI-powered Apps & Automation | React · Next.js · Supabase". Foto, link do Nexus Hub como projeto em destaque. LinkedIn é onde clientes e recrutadores te encontram.</p>
+        <div class="task-action">linkedin.com/in/seu-nome</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 03</div>
+        <div class="task-title">Instalar Cursor + configurar OpenRouter</div>
+        <p class="task-desc">cursor.com → Download → Settings → Models → OpenRouter key. Agora você tem o melhor IDE com IA integrada e acesso a Claude, GPT e Gemini de graça. Esse é seu ambiente de trabalho real.</p>
+        <div class="task-action">cursor.com + openrouter.ai</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 04</div>
+        <div class="task-title">Criar o arquivo CLAUDE.md no Nexus Hub</div>
+        <p class="task-desc">Um arquivo de texto que diz para a IA as regras do projeto: stack usada, padrões de código, o que nunca fazer. Isso faz a IA gerar código coerente em vez de inventar coisas aleatórias.</p>
+        <div class="task-action">É um arquivo .md na raiz do projeto</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fase 2 -->
+  <div class="phase reveal">
+    <div class="phase-header">
+      <div>
+        <div class="phase-period">Semana 2 → Mês 2</div>
+        <div class="phase-title">Fase 2 — Aprender Fazendo</div>
+      </div>
+      <span class="phase-tag ph-blue">Foco total</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-n">TAREFA 05</div>
+        <div class="task-title">CS50x de Harvard — 1 semana por módulo</div>
+        <p class="task-desc">cs50.harvard.edu/x — gratuito, em inglês, legendado. É o certificado mais respeitado para iniciantes no mundo. Cada semana tem um projeto — esses projetos viram repositórios no seu GitHub automaticamente.</p>
+        <div class="task-action">cs50.harvard.edu/x</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 06</div>
+        <div class="task-title">Construir um mini-produto com IA</div>
+        <p class="task-desc">Escolha um problema específico (ex: gerador de legendas para Instagram, chatbot para cardápio de restaurante) e construa usando Next.js + Supabase + Claude API. O objetivo é ter algo que outra pessoa use.</p>
+        <div class="task-action">Escolher o nicho é o primeiro passo</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 07</div>
+        <div class="task-title">freeCodeCamp — Responsive Web Design</div>
+        <p class="task-desc">freecodecamp.org — o primeiro certificado da lista. Rápido, gratuito e emite um certificado verificável. Confirma suas bases de HTML e CSS com projetos práticos. Desbloqueie esse primeiro antes dos outros.</p>
+        <div class="task-action">freecodecamp.org/learn</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 08</div>
+        <div class="task-title">Publicar 3 projetos no GitHub com README</div>
+        <p class="task-desc">Nexus Hub + projeto CS50x da semana + mini-produto. Cada README explica: o que é, como funciona, tecnologias usadas, print do resultado. Três projetos públicos = portfólio real que você pode mostrar.</p>
+        <div class="task-action">3 repositórios, 3 READMEs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fase 3 -->
+  <div class="phase reveal">
+    <div class="phase-header">
+      <div>
+        <div class="phase-period">Mês 2 → Mês 3</div>
+        <div class="phase-title">Fase 3 — Primeiro Real</div>
+      </div>
+      <span class="phase-tag ph-gold">Objetivo final</span>
+    </div>
+    <div class="tasks">
+      <div class="task">
+        <div class="task-n">TAREFA 09</div>
+        <div class="task-title">Criar perfil no Kwork e 99Freelas</div>
+        <p class="task-desc">Serviço oferecido: "Crio chatbots e automações com IA para empresas e criadores de conteúdo". Preço inicial: R$80–150. Foto profissional, descrição clara, link do GitHub. Não espere o perfil ficar perfeito para publicar.</p>
+        <div class="task-action">kwork.com + 99freelas.com.br</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 10</div>
+        <div class="task-title">Primeiro freela entregue e pago</div>
+        <p class="task-desc">Pode ser pequeno. Um chatbot simples. Uma landing page. Uma automação básica. O valor não importa — o que importa é ter a prova de que alguém pagou pelo seu trabalho. Isso muda tudo.</p>
+        <div class="task-action">A meta dos 90 dias</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 11</div>
+        <div class="task-title">Lançar o mini-produto com preço</div>
+        <p class="task-desc">O produto que você construiu na Fase 2 — coloque um preço. R$19/mês, R$97 único. Whop e Gumroad permitem vender digitalmente sem empresa aberta. Mesmo que ninguém compre de início, o ato de precificar é profissional.</p>
+        <div class="task-action">whop.com ou gumroad.com</div>
+      </div>
+      <div class="task">
+        <div class="task-n">TAREFA 12</div>
+        <div class="task-title">GitHub Foundations — certificado Microsoft</div>
+        <p class="task-desc">Depois de ter os projetos no GitHub, esse certificado faz sentido. Microsoft/GitHub emite — tem peso real no mercado. Estuda o material e faz a prova. Com os projetos que você já terá, passa fácil.</p>
+        <div class="task-action">learn.microsoft.com/github-foundations</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STACK REAL ══ -->
+<section class="stack-section" style="padding:100px 6vw">
+  <div class="s-label reveal"><span class="s-num">04</span> Stack para dominar</div>
+  <h2 class="stack-heading reveal">4 ferramentas que importam.<br><em style="color:var(--accent)">O resto é pesquisa quando precisar.</em></h2>
+  <p class="stack-sub reveal">Você tem 60+ ferramentas mapeadas. Para começar a cobrar, você precisa dominar apenas 4. O resto você aprende quando o projeto exigir.</p>
+  <div class="stack-grid reveal">
+    <div class="stack-cell">
+      <div class="stack-cat">Framework</div>
+      <div class="stack-tool">Next.js</div>
+      <p class="stack-why">React + backend + rotas + API routes em um lugar. Padrão da indústria. Vercel (mesmo criador) faz deploy em 30 segundos.</p>
+      <span class="stack-badge core-badge">Core — domine isso</span>
+    </div>
+    <div class="stack-cell">
+      <div class="stack-cat">Backend / DB</div>
+      <div class="stack-tool">Supabase</div>
+      <p class="stack-why">Banco de dados PostgreSQL + autenticação + storage + API automática. Gratuito. Substitui 80% do backend que você precisaria escrever.</p>
+      <span class="stack-badge core-badge">Core — domine isso</span>
+    </div>
+    <div class="stack-cell">
+      <div class="stack-cat">Deploy</div>
+      <div class="stack-tool">Vercel</div>
+      <p class="stack-why">git push → site no ar. Domínio grátis, HTTPS automático, previews de cada branch. Você nunca mais pensa em servidor.</p>
+      <span class="stack-badge core-badge">Core — domine isso</span>
+    </div>
+    <div class="stack-cell">
+      <div class="stack-cat">IA</div>
+      <div class="stack-tool">Claude API</div>
+      <p class="stack-why">A IA que você usa aqui, agora disponível via API para seus produtos. US$5 de crédito grátis. É o que diferencia seus apps de qualquer site comum.</p>
+      <span class="stack-badge core-badge">Core — domine isso</span>
+    </div>
+    <div class="stack-cell">
+      <div class="stack-cat">CSS</div>
+      <div class="stack-tool">Tailwind</div>
+      <p class="stack-why">Você já usa. Classes utilitárias que aceleram o CSS sem sair do HTML. shadcn/ui em cima te dá componentes prontos profissionais.</p>
+      <span class="stack-badge core-badge">Você já sabe</span>
+    </div>
+    <div class="stack-cell">
+      <div class="stack-cat">Versionamento</div>
+      <div class="stack-tool">Git + GitHub</div>
+      <p class="stack-why">Controla versões, guarda seu código na nuvem, mostra seu trabalho. Comandos essenciais: git add, commit, push. É tudo que você precisa saber agora.</p>
+      <span class="stack-badge core-badge">Aprenda na semana 1</span>
+    </div>
+    <div class="stack-cell">
+      <div class="stack-cat">Animação</div>
+      <div class="stack-tool">GSAP + Lenis</div>
+      <p class="stack-why">Você já tem mapeado e entende. É o diferencial visual dos seus projetos — o que faz um site seu parecer de agência premium.</p>
+      <span class="stack-badge later-badge">Já mapeado</span>
+    </div>
+    <div class="stack-cell">
+      <div class="stack-cat">Local AI</div>
+      <div class="stack-tool">Ollama</div>
+      <p class="stack-why">LLMs rodando na sua máquina. Poderoso para privacidade e custo zero. Mas só faz sentido quando você já tem produto funcionando em produção.</p>
+      <span class="stack-badge later-badge">Após fase 3</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══ O QUE É ══ -->
+<section class="whatis">
+  <div class="s-label reveal"><span class="s-num">05</span> Perguntas reais</div>
+  <h2 class="whatis-heading reveal">As dúvidas que você tinha<br>respondidas de uma vez</h2>
+
+  <div class="qa-item reveal">
+    <div class="qa-q">O que são as IDEs como Lovable, Rocket, Emergent?</div>
+    <div class="qa-a">São <b>"geradores de app por prompt"</b> — você escreve o que quer em texto e eles geram o código React/Next.js completo. <b>Não são substitutos para aprender a programar</b>, mas são ferramentas poderosas para prototipar rápido ou mostrar uma ideia a um cliente em horas. Pense neles como o ChatGPT do desenvolvimento web — geram 70% do trabalho, mas você precisa entender o código para corrigir os 30% que faltam.</div>
+  </div>
+
+  <div class="qa-item reveal">
+    <div class="qa-q">O que é o Hermes e para que serve?</div>
+    <div class="qa-a">Hermes é um agente de IA que <b>age de forma autônoma</b> — navega em sites, preenche formulários, executa sequências de tarefas sem você intervir. Diferente de Claude (que conversa), Hermes <b>faz</b>. É útil para automações repetitivas: "pesquisa os 10 principais fornecedores desse produto e me manda um relatório" — ele pesquisa sozinho. Mas precisa de configuração e faz mais sentido quando você já tem um fluxo de trabalho estabelecido para automatizar.</div>
+  </div>
+
+  <div class="qa-item reveal">
+    <div class="qa-q">Preciso de certificados para conseguir trabalho?</div>
+    <div class="qa-a">Certificados são <b>evidência secundária</b>. O que emprega é o projeto. Um recrutador que vê "CS50x Harvard" no LinkedIn fica mais atento — mas só se tiver um projeto real do lado para confirmar. A ordem certa: <b>projeto → certificado → LinkedIn → cliente</b>. Nunca: certificado → certificado → certificado → certificado (que é onde a maioria trava).</div>
+  </div>
+
+  <div class="qa-item reveal">
+    <div class="qa-q">Preciso de faculdade para ser dev?</div>
+    <div class="qa-a">Não. O mercado de desenvolvimento — especialmente com IA — avalia pelo que você <b>construiu e entregou</b>, não pelo diploma. CS50x de Harvard é gratuito, online e tem o mesmo valor de marketing que um semestre de faculdade particular. O que conta: GitHub com projetos, clientes satisfeitos e capacidade de resolver problemas reais.</div>
+  </div>
+
+  <div class="qa-item reveal">
+    <div class="qa-q">Quanto tempo para conseguir o primeiro freela?</div>
+    <div class="qa-a">Com foco total — <b>60 a 90 dias</b>. Semana 1: GitHub + LinkedIn. Semana 2–6: CS50x + mini-produto. Mês 2: perfil no Kwork com o produto pronto. Mês 3: primeira proposta aceita. O fator que determina tudo não é talento — é <b>consistência de 1h por dia</b> no que importa, não em explorar ferramentas novas.</div>
+  </div>
+</section>
+
+<!-- ══ CERTIFICADOS ══ -->
+<section class="cert-section">
+  <div class="s-label reveal"><span class="s-num">06</span> Certificados</div>
+  <h2 class="cert-heading reveal">Ordem certa.<br><em style="color:var(--accent)">Não todos de uma vez.</em></h2>
+  <p class="cert-sub reveal">8 certificados mapeados é ótimo. A estratégia errada é tentar todos ao mesmo tempo. Um concluído vale mais que oito no meio.</p>
+  <div class="certs-list">
+    <div class="cert-item priority reveal">
+      <div class="cert-rank">1</div>
+      <div class="cert-body">
+        <div class="cert-issuer">Harvard CS50</div>
+        <div class="cert-name">CS50x — Intro to Computer Science</div>
+        <p class="cert-note">O mais reconhecido globalmente para iniciantes. Gratuito. Cada semana = um projeto no GitHub. É o certificado que abre portas no mercado internacional.</p>
+        <span class="cert-priority-tag">Comece aqui — Semana 2</span>
+      </div>
+    </div>
+    <div class="cert-item priority reveal">
+      <div class="cert-rank">2</div>
+      <div class="cert-body">
+        <div class="cert-issuer">freeCodeCamp</div>
+        <div class="cert-name">Responsive Web Design (HTML+CSS)</div>
+        <p class="cert-note">Rápido, gratuito e valida o que você já sabe. Projetos práticos que viram repositório. Desbloqueie esse enquanto faz o CS50x — são complementares.</p>
+        <span class="cert-priority-tag">Paralelo ao CS50x</span>
+      </div>
+    </div>
+    <div class="cert-item reveal">
+      <div class="cert-rank">3</div>
+      <div class="cert-body">
+        <div class="cert-issuer">Microsoft / GitHub</div>
+        <div class="cert-name">GitHub Foundations</div>
+        <p class="cert-note">Depois de ter projetos no GitHub, este certificado faz sentido. Emitido pela Microsoft, tem peso real no mercado tech. Estuda em 1 semana, faz a prova online.</p>
+      </div>
+    </div>
+    <div class="cert-item reveal">
+      <div class="cert-rank">4</div>
+      <div class="cert-body">
+        <div class="cert-issuer">freeCodeCamp</div>
+        <div class="cert-name">JavaScript Algorithms & Data Structures</div>
+        <p class="cert-note">Vai reforçar o que você aprendeu no CS50x e adicionar profundidade em JS. Faça após ter o CS50x e o Responsive Web Design concluídos.</p>
+      </div>
+    </div>
+    <div class="cert-item reveal">
+      <div class="cert-rank">5</div>
+      <div class="cert-body">
+        <div class="cert-issuer">freeCodeCamp</div>
+        <div class="cert-name">Front End Development Libraries (React)</div>
+        <p class="cert-note">Formaliza seu conhecimento de React que você já usa. Mês 3 em diante, quando você já estiver trabalhando com Next.js em projetos reais.</p>
+      </div>
+    </div>
+    <div class="cert-item reveal">
+      <div class="cert-rank">6</div>
+      <div class="cert-body">
+        <div class="cert-issuer">Harvard CS50</div>
+        <div class="cert-name">CS50W — Web com Python & JS</div>
+        <p class="cert-note">Continuação do CS50x focada em web. Só faz sentido após o CS50x estar 100% concluído. Aprofunda backend com Python — complementa o Next.js.</p>
+      </div>
+    </div>
+    <div class="cert-item reveal" style="opacity:.5">
+      <div class="cert-rank">7</div>
+      <div class="cert-body">
+        <div class="cert-issuer">The Odin Project</div>
+        <div class="cert-name">Full Stack JavaScript Path</div>
+        <p class="cert-note">Excelente curso mas extenso — meses de conteúdo. Para quando você já tiver renda e quiser aprofundar. Não é prioridade nos 90 dias.</p>
+      </div>
+    </div>
+    <div class="cert-item reveal" style="opacity:.5">
+      <div class="cert-rank">8</div>
+      <div class="cert-body">
+        <div class="cert-issuer">Google / Coursera</div>
+        <div class="cert-name">Cybersecurity Professional Certificate</div>
+        <p class="cert-note">Ótimo certificado mas é outro caminho de carreira. Se cibersegurança for seu interesse real, explore depois. Não misture com dev web agora.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ AGORA ══ -->
+<section class="now">
+  <p class="now-pre">Execute agora</p>
+  <h2 class="now-heading">Três coisas.<br>Esta semana.<br>Sem negociação.</h2>
+  <div class="now-steps">
+    <div class="now-step">
+      <div class="now-step-n">HOJE</div>
+      <div class="now-step-t">Criar conta no GitHub</div>
+      <p class="now-step-d">github.com → Sign up → Criar repositório "nexus-hub" → Upload do seu site → README com descrição. 45 minutos.</p>
+    </div>
+    <div class="now-step">
+      <div class="now-step-n">AMANHÃ</div>
+      <div class="now-step-t">Ativar LinkedIn</div>
+      <p class="now-step-d">Foto + headline "Vibecoder | AI Apps" + link do GitHub no perfil. Menos de 1 hora. Você já existe profissionalmente.</p>
+    </div>
+    <div class="now-step">
+      <div class="now-step-n">ESSA SEMANA</div>
+      <div class="now-step-t">Começar CS50x</div>
+      <p class="now-step-d">cs50.harvard.edu/x → Semana 0. Assistir a aula, fazer o projeto, subir no GitHub. Seu segundo repositório.</p>
+    </div>
+  </div>
+  <a class="now-cta" href="https://github.com" target="_blank" rel="noopener">
+    Criar conta no GitHub agora
+  </a>
+</section>
+
+<footer>
+  <div class="footer-brand">Vitor<span>Zero</span></div>
+  <div class="footer-meta">Plano real · 90 dias · Gerado por Claude · 2025</div>
+</footer>
+
+<script>
+/* Loader */
+window.addEventListener('load',()=>{
+  setTimeout(()=>document.getElementById('loader').classList.add('gone'),1500);
+});
+
+/* Cursor */
+const cur=document.getElementById('cur'),ring=document.getElementById('curring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+
+/* Scroll reveal */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
